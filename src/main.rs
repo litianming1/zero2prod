@@ -1,9 +1,21 @@
+use sqlx::PgPool;
 use std::{io, net::TcpListener};
-use zero2prod::run;
+use zero2prod::configuration::get_configuration;
+use zero2prod::startup::run;
+use zero2prod::telemetry::{get_subscriber, init_subscriber};
 
 #[tokio::main]
-async fn main() -> Result<(),io::Error>{
-    let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
+async fn main() -> Result<(), io::Error> {
+    let subscriber = get_subscriber("zero2prod".to_string(), "info".to_string(),std::io::stdout);
+    init_subscriber(subscriber);
 
-    run(listener)?.await
+    let configuration = get_configuration().expect("Failed to read configuration");
+    let connection_pool = PgPool::connect(&configuration.database.connection_string())
+        .await
+        .expect("Failed to connect to Postgres");
+    let address = format!("127.0.0.1:{}", configuration.application_port);
+    let listener = TcpListener::bind(address)?;
+
+    run(listener, connection_pool)?.await?;
+    Ok(())
 }
