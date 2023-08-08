@@ -1,3 +1,7 @@
 {
-    "Codegeex.Explanation.LanguagePreference": "zh-CN"
+    "Codegeex.Explanation.LanguagePreference": "zh-CN",
+    "rust-analyzer.linkedProjects": [
+        ".\\Cargo.toml",
+        ".\\Cargo.toml"
+    ]
 }
