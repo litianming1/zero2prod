@@ -24,10 +24,7 @@ impl EmailClient {
         authorization_token: Secret<String>,
         timeout: std::time::Duration,
     ) -> Self {
-        let http_client = Client::builder()
-            .timeout(timeout)
-            .build()
-            .unwrap();
+        let http_client = Client::builder().timeout(timeout).build().unwrap();
         Self {
             http_client,
             sender,
@@ -68,7 +65,6 @@ impl EmailClient {
 mod tests {
     use crate::domain::SubscriberEmail;
     use crate::email_client::EmailClient;
-    use claims::assert_err;
     use fake::faker::internet::en::SafeEmail;
     use fake::faker::lorem::en::{Paragraph, Sentence};
     use fake::{Fake, Faker};
@@ -90,17 +86,22 @@ mod tests {
             }
         }
     }
-    fn subject()->String {
+    fn subject() -> String {
         Sentence(1..2).fake()
     }
-    fn content()->String {
+    fn content() -> String {
         Paragraph(1..10).fake()
     }
-    fn email()->SubscriberEmail{
+    fn email() -> SubscriberEmail {
         SubscriberEmail::parse(SafeEmail().fake()).unwrap()
     }
-    fn email_client(base_url:String)->EmailClient {
-        EmailClient::new(base_url, email(), Secret::new(Faker.fake()), std::time::Duration::from_millis(200))
+    fn email_client(base_url: String) -> EmailClient {
+        EmailClient::new(
+            base_url,
+            email(),
+            Secret::new(Faker.fake()),
+            std::time::Duration::from_millis(200),
+        )
     }
     #[tokio::test]
     async fn send_email_sends_the_expected_request() {
@@ -117,7 +118,7 @@ mod tests {
             .expect(1)
             .mount(&mock_server)
             .await;
-       
+
         let _ = email_client
             .send_email(email(), &subject(), &content(), &content())
             .await;
